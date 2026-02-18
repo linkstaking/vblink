@@ -1,5 +1,6 @@
 const BSC_TESTNET_CHAIN_ID = 97;
-const STAKING_ADDRESS = "0xDaD2c4181447f2af55834376d1752C00b43C52F4";
+const STAKING_ADDRESS = "0xEDc15249Fd44D5DAdce4389722F337AfB5F3F963";
+const EXPECTED_TOKEN_ADDRESS = "0xd96eaEb41474F1325eF399f6F5fc54AA71f09bac";
 
 const STAKING_ABI = [
   "function stakeToken() view returns (address)",
@@ -31,8 +32,8 @@ let token;
 let tokenDecimals = 18;
 
 const CUSTOM_ERROR_MESSAGES = {
-  MinDeposit: "质押金额低于最小限制（当前最小 500 LINK）",
-  InvalidMultiple: "质押金额必须是 100 LINK 的整数倍",
+  MinDeposit: "质押金额低于最小限制（当前最小 1 LINK）",
+  InvalidMultiple: "质押金额必须是 1 LINK 的整数倍",
   AmountExceedsMax: "质押金额超过单笔上限",
   MaxStakesExceeded: "该地址已达到最大质押笔数",
   ActiveStakeNotMatured: "当前有未到期有效质押，暂不可再次质押",
@@ -169,6 +170,12 @@ async function connectWallet() {
 
   staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
   const tokenAddr = await staking.stakeToken();
+
+  if (String(tokenAddr).toLowerCase() !== String(EXPECTED_TOKEN_ADDRESS).toLowerCase()) {
+    log(`警告：stakeToken 与预期不一致。stakeToken=${tokenAddr} 预期=${EXPECTED_TOKEN_ADDRESS}`);
+    toast("error", "警告：合约代币地址与预期不一致，请确认是否连错合约");
+  }
+
   token = new ethers.Contract(tokenAddr, ERC20_ABI, signer);
   try {
     tokenDecimals = Number(await token.decimals());

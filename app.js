@@ -106,7 +106,7 @@ function resetUI() {
   if (detail) detail.textContent = "-";
 
   // preview fields
-  const pvIds = ["pvValid", "pvFee", "pvNet", "pvDuration", "pvRate", "pvInterest", "pvPayout"];
+  const pvIds = ["pvValid", "pvBase", "pvDuration", "pvRate", "pvInterest", "pvPayout"];
   for (const id of pvIds) {
     const el = $(id);
     if (el) el.textContent = "-";
@@ -503,13 +503,24 @@ async function depositWithReferrer() {
 async function preview() {
   const amount = parseAmount($("amount").value);
   const result = await staking.previewNetAndInterest(amount);
-  $("pvValid").textContent = String(result.valid);
-  $("pvFee").textContent = formatAmount(result.totalFee);
-  $("pvNet").textContent = formatAmount(result.netAmount);
-  $("pvDuration").textContent = result.duration.toString();
-  $("pvRate").textContent = result.totalRateBP.toString();
-  $("pvInterest").textContent = formatAmount(result.interestAmount);
-  $("pvPayout").textContent = formatAmount(result.payoutAmount);
+  const pvValid = $("pvValid");
+  if (pvValid) pvValid.textContent = String(result.valid);
+
+  const base99 = amount.mul(9900).div(10000);
+  const pvBase = $("pvBase");
+  if (pvBase) pvBase.textContent = formatAmount(base99);
+
+  const pvDuration = $("pvDuration");
+  if (pvDuration) pvDuration.textContent = result.duration.toString();
+
+  const pvRate = $("pvRate");
+  if (pvRate) pvRate.textContent = result.totalRateBP.toString();
+
+  const pvInterest = $("pvInterest");
+  if (pvInterest) pvInterest.textContent = formatAmount(result.interestAmount);
+
+  const pvPayout = $("pvPayout");
+  if (pvPayout) pvPayout.textContent = formatAmount(result.payoutAmount);
 }
 
 async function manualWithdraw() {

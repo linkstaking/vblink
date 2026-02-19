@@ -134,6 +134,27 @@ async function requireCorrectNetwork() {
   }
 }
 
+function isGasTooLowError(errorObj) {
+  const code = errorObj?.code;
+  const msg = String(errorObj?.message || errorObj || "");
+  return (
+    code === -32000 &&
+    /gas price below minimum|gas tip cap .* below minimum|minimum needed/i.test(msg)
+  );
+}
+
+async function sendTxAdaptive(sendDefault, sendWithOverrides) {
+  try {
+    return await sendDefault();
+  } catch (e) {
+    if (!provider || !isGasTooLowError(e)) throw e;
+
+    const gasPrice = await provider.getGasPrice();
+    log(`检测到 gas 过低，自动使用网络 gasPrice 重试：${ethers.utils.formatUnits(gasPrice, "gwei")} gwei`);
+    return await sendWithOverrides({ gasPrice });
+  }
+}
+
 function log(message) {
   const target = $("log");
   const now = new Date().toLocaleTimeString();
@@ -393,7 +414,11 @@ async function refreshMyData() {
 async function approve() {
   await requireCorrectNetwork();
   const amount = parseAmount($("amount").value);
-  const tx = await token.approve(STAKING_ADDRESS, amount);
+
+  const tx = await sendTxAdaptive(
+    () => token.approve(STAKING_ADDRESS, amount),
+    (overrides) => token.approve(STAKING_ADDRESS, amount, overrides)
+  );
   log(`授权已发送: ${tx.hash}`);
   await tx.wait();
   log("授权成功");
@@ -429,7 +454,10 @@ async function deposit() {
     throw new Error("你尚未绑定推荐人，请使用“带推荐人质押”完成首次绑定");
   }
 
-  const tx = await staking.deposit(amount);
+  const tx = await sendTxAdaptive(
+    () => staking.deposit(amount),
+    (overrides) => staking.deposit(amount, overrides)
+  );
   log(`质押交易已发送: ${tx.hash}`);
   await tx.wait();
   log("质押成功");
@@ -461,7 +489,10 @@ async function depositWithReferrer() {
     throw new Error("推荐人在当前合约下没有有效质押，无法绑定");
   }
 
-  const tx = await staking.depositWithReferrer(amount, referrer);
+  const tx = await sendTxAdaptive(
+    () => staking.depositWithReferrer(amount, referrer),
+    (overrides) => staking.depositWithReferrer(amount, referrer, overrides)
+  );
   log(`带推荐质押已发送: ${tx.hash}`);
   await tx.wait();
   log("带推荐质押成功");
@@ -485,7 +516,10 @@ async function manualWithdraw() {
   await requireCorrectNetwork();
   const id = Number($("withdrawStakeId").value);
   if (Number.isNaN(id) || id < 0) throw new Error("stakeId 无效");
-  const tx = await staking.manualWithdrawMatured(id);
+  const tx = await sendTxAdaptive(
+    () => staking.manualWithdrawMatured(id),
+    (overrides) => staking.manualWithdrawMatured(id, overrides)
+  );
   log(`手动提现已发送: ${tx.hash}`);
   await tx.wait();
   log("手动提现成功");
@@ -498,7 +532,10 @@ async function pressWithdraw() {
   const oldId = Number($("pressOldId").value);
   const newAmount = parseAmount($("pressNewAmount").value);
   if (Number.isNaN(oldId) || oldId < 0) throw new Error("oldStakeId 无效");
-  const tx = await staking.withdrawWithPressStake(oldId, newAmount);
+  const tx = await sendTxAdaptive(
+    () => staking.withdrawWithPressStake(oldId, newAmount),
+    (overrides) => staking.withdrawWithPressStake(oldId, newAmount, overrides)
+  );
   log(`压单提现已发送: ${tx.hash}`);
   await tx.wait();
   log("压单提现成功");
@@ -508,7 +545,10 @@ async function pressWithdraw() {
 
 async function claimAgent() {
   await requireCorrectNetwork();
-  const tx = await staking.claimAgentRewards();
+  const tx = await sendTxAdaptive(
+    () => staking.claimAgentRewards(),
+    (overrides) => staking.claimAgentRewards(overrides)
+  );
   log(`领取代理奖励已发送: ${tx.hash}`);
   await tx.wait();
   log("领取代理奖励成功");

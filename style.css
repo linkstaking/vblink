@@ -41,6 +41,26 @@ h2 {
   gap: 2px;
 }
 
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-text h1 {
+  margin: 0 0 6px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: inline-block;
+  object-fit: cover;
+  border: 1px solid #6a7dd8;
+  box-shadow: 0 8px 18px rgba(21, 40, 88, 0.45);
+}
+
 .sub {
   margin: 0;
   color: #aebcff;
@@ -173,6 +193,15 @@ pre {
 }
 
 @media (max-width: 768px) {
+    .hero-top {
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      font-size: 18px;
+    }
   .container {
     margin: 12px auto;
     padding: 0 10px 16px;

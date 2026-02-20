@@ -1,8 +1,36 @@
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #131b36 0%, #0b1020 50%, #090d1a 100%);
+  background: radial-gradient(circle at top, #122043 0%, #0b1020 55%, #090d1a 100%);
   color: #ecf1ff;
   font-family: Arial, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -10% -10% -10% -10%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body::before {
+  background:
+    radial-gradient(600px 420px at 10% 8%, rgba(34, 160, 255, 0.22), transparent 60%),
+    radial-gradient(520px 360px at 85% 15%, rgba(50, 230, 180, 0.18), transparent 60%),
+    radial-gradient(700px 520px at 30% 85%, rgba(80, 120, 255, 0.14), transparent 65%);
+  filter: blur(0.5px);
+}
+
+body::after {
+  background-image:
+    radial-gradient(rgba(120, 170, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(120deg, rgba(56, 90, 180, 0.18), rgba(20, 30, 70, 0.12));
+  background-size: 26px 26px, auto;
+  opacity: 0.6;
+  mask-image: radial-gradient(circle at 50% 30%, #000 40%, transparent 75%);
 }
 
 .container {

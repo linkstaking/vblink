@@ -159,6 +159,8 @@ pre {
 .kv-grid span {
   color: #ffffff;
   font-weight: 600;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .toast-container {
